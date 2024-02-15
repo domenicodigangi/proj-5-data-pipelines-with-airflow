@@ -1,26 +1,32 @@
 from airflow.hooks.postgres_hook import PostgresHook
+from airflow.operators.postgres_operator import PostgresOperator
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from airflow.secrets.metastore import MetastoreBackend
+
 
 class StageToRedshiftOperator(BaseOperator):
-    ui_color = '#358140'
+    ui_color = "#358140"
 
     @apply_defaults
-    def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # redshift_conn_id=your-connection-name
-                 *args, **kwargs):
+    def __init__(
+        self, redshift_conn_id: str, s3_path: str, table_name: str, *args, **kwargs
+    ):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.conn_id = redshift_conn_id
+        self.s3_path = s3_path
+        self.table_name = table_name
 
     def execute(self, context):
-        self.log.info('StageToRedshiftOperator not implemented yet')
-
-
-
-
-
+        metastoreBackend = MetastoreBackend()
+        aws_connection = metastoreBackend.get_connection("aws_credentials")
+        redshift_hook = PostgresHook("redshift")
+        execution_date = context["execution_date"]
+        sql_stmt = sql_statements.COPY_MONTHLY_TRIPS_SQL.format(
+            aws_connection.login,
+            aws_connection.password,
+            year=execution_date.year,
+            month=execution_date.month,
+        )
+        redshift_hook.run(sql_stmt)

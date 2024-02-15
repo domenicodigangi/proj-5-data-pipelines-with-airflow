@@ -1,0 +1,1 @@
+docker compose run -it  --entrypoint /bin/bash airflow-cli 
