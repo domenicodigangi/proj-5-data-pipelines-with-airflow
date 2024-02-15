@@ -195,3 +195,5 @@ pyrightconfig.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
+
+set_connections_and_variables.sh
